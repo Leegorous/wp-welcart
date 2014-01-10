@@ -2147,9 +2147,11 @@ function usces_all_delete_order_data(&$obj){
 //20120306ysk start 0000324
 		//$restore_point = false;
 		$point = 0;
+		$query = $wpdb->prepare("SELECT * FROM $tableName WHERE ID = %d", $id);
+		$order_res = $wpdb->get_row( $query, ARRAY_A );
 		if( 'activate' == $usces->options['membersystem_state'] && 'activate' == $usces->options['membersystem_point'] && !empty($order_res['mem_id']) && !$usces->is_status('cancel', $order_res['order_status']) ) {
-			$query = $wpdb->prepare("SELECT * FROM $tableName WHERE ID = %d", $id);
-			$order_res = $wpdb->get_row( $query, ARRAY_A );
+			//$query = $wpdb->prepare("SELECT * FROM $tableName WHERE ID = %d", $id);
+			//$order_res = $wpdb->get_row( $query, ARRAY_A );
 			if( 0 < $order_res['order_getpoint'] ) {
 				//if( $usces->is_status('completion', $order_res['order_status']) ) {
 				//	$restore_point = true;
@@ -3244,7 +3246,7 @@ function uesces_get_mail_addressform( $type, $data, $order_id, $out = 'return' )
 			$order_email = $order_data[0]->order_email;
 
 			$formtag .= ( !empty( $mem_id ) ) ? __( 'membership number', 'usces' ) . "\t\t: " . $mem_id . "\r\n" : '';
-			$formtag .= ( iempty( $order_email ) ) ? __( 'e-mail adress', 'usces' ) . "\t\t: " . $order_email . "\r\n" : '';
+			$formtag .= ( !empty( $order_email ) ) ? __( 'e-mail adress', 'usces' ) . "\t\t: " . $order_email . "\r\n" : '';
 		}
 		//20131129_kitamu_end
 		$formtag .= $name_label . "\t\t: " . sprintf(__('Mr/Mrs %s', 'usces'), ($values['name1'] . ' ' . $values['name2'])) . " \r\n";
@@ -3276,7 +3278,7 @@ function uesces_get_mail_addressform( $type, $data, $order_id, $out = 'return' )
 			$order_email = $order_data[0]->order_email;
 
 			$formtag .= ( !empty( $mem_id ) ) ? __( 'membership number', 'usces' ) . "\t\t: " . $mem_id . "\r\n" : '';
-			$formtag .= ( iempty( $order_email ) ) ? __( 'e-mail adress', 'usces' ) . "\t\t: " . $order_email . "\r\n" : '';
+			$formtag .= ( !empty( $order_email ) ) ? __( 'e-mail adress', 'usces' ) . "\t\t: " . $order_email . "\r\n" : '';
 		}
 		//20131129_kitamu_end
 		$formtag .= $name_label . "    : " . sprintf(__('Mr/Mrs %s', 'usces'), ($values['name2'] . ' ' . $values['name1'])) . " \r\n";
