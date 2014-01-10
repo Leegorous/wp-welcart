@@ -34,10 +34,10 @@ class Welcart_featured extends WP_Widget {
 			foreach($myposts as $post) :
 				$post_id = $post->ID;
 			?>
-				<li class="featured_list<?php echo ((1 === (int)$num) ? ' featured_single' : ''); ?><?php echo apply_filters('usces_filter_featured_list_class', NULL, $list_index, $num); ?>">
+				<li class="featured_list thumbnail_box<?php echo ((1 === (int)$num) ? ' featured_single' : ''); ?><?php echo apply_filters('usces_filter_featured_list_class', NULL, $list_index, $num); ?>">
 			<?php
-				$list = '<div class="thumimg"><a href="' . get_permalink($post_id) . '">' . usces_the_itemImage(0, 150, 150, $post, 'return' ) . "</a></div>\n";
-				$list .= '<div class="thumtitle"><a href="' . get_permalink($post_id) . '" rel="bookmark">' . $usces->getItemName($post_id) . '&nbsp;(' . $usces->getItemCode($post_id) . ")</a></div>\n";
+				$list = '<div class="thumimg"><a href="' . get_permalink($post_id) . '">' . usces_the_itemImage(0, 230, 200, $post, 'return' ) . "</a></div>\n";
+				$list .= '<div class="thumtitle"><a href="' . get_permalink($post_id) . '" rel="bookmark">' . $usces->getItemName($post_id) . '</a></div><div class="price">'.usces_crform( usces_the_firstPrice('return', $post), true, false, 'return' ) . usces_guid_tax('return') . '</div>';
 				echo apply_filters( 'usces_filter_featured_widget', $list, $post, $list_index, $instance );
 			?>
 				</li>

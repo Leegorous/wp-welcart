@@ -367,9 +367,9 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 				<input type="hidden" name="aid" value="'.$acting_opts['aid'].'" />
 				<input type="hidden" name="cod" value="'.$rand.'" />
 				<input type="hidden" name="jb" value="'.$acting_opts['card_jb'].'" />
-				<input type="hidden" name="am" value="'.usces_crform($usces_entries['order']['total_full_price'], false, false, 'return', false).'" />
-				<input type="hidden" name="tx" value="0" />
-				<input type="hidden" name="sf" value="0" />
+				<input type="hidden" name="am" value="'.usces_crform($usces_entries['order']['total_items_price'], false, false, 'return', false).'" />
+				<input type="hidden" name="tx" value="'.usces_crform($usces_entries['order']['tax'], false, false, 'return', false).'" />
+				<input type="hidden" name="sf" value="'.usces_crform($usces_entries['order']['shipping_charge'], false, false, 'return', false).'" />
 				<input type="hidden" name="pt" value="1" />
 				<input type="hidden" name="inm" value="'.esc_attr($desc).'" />
 				<input type="hidden" name="pn" value="'.esc_attr(str_replace('-', '', mb_convert_kana($usces_entries['customer']['tel'], 'a', 'UTF-8'))).'" />
@@ -404,9 +404,9 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 				<input type="hidden" name="aid" value="'.$acting_opts['aid'].'" />
 				<input type="hidden" name="cod" value="'.$rand.'" />
 				<input type="hidden" name="jb" value="CAPTURE" />
-				<input type="hidden" name="am" value="'.usces_crform($usces_entries['order']['total_full_price'], false, false, 'return', false).'" />
-				<input type="hidden" name="tx" value="0" />
-				<input type="hidden" name="sf" value="0" />
+				<input type="hidden" name="am" value="'.usces_crform($usces_entries['order']['total_items_price'], false, false, 'return', false).'" />
+				<input type="hidden" name="tx" value="'.usces_crform($usces_entries['order']['tax'], false, false, 'return', false).'" />
+				<input type="hidden" name="sf" value="'.usces_crform($usces_entries['order']['shipping_charge'], false, false, 'return', false).'" />
 				<input type="hidden" name="pt" value="2" />
 				<input type="hidden" name="inm" value="'.esc_attr($desc).'" />
 				<input type="hidden" name="pn" value="'.esc_attr(str_replace('-', '', mb_convert_kana($usces_entries['customer']['tel'], 'a', 'UTF-8'))).'" />
@@ -441,9 +441,9 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 				<input type="hidden" name="aid" value="'.$acting_opts['aid'].'" />
 				<input type="hidden" name="cod" value="'.$rand.'" />
 				<input type="hidden" name="jb" value="CAPTURE" />
-				<input type="hidden" name="am" value="'.usces_crform($usces_entries['order']['total_full_price'], false, false, 'return', false).'" />
-				<input type="hidden" name="tx" value="0" />
-				<input type="hidden" name="sf" value="0" />
+				<input type="hidden" name="am" value="'.usces_crform($usces_entries['order']['total_items_price'], false, false, 'return', false).'" />
+				<input type="hidden" name="tx" value="'.usces_crform($usces_entries['order']['tax'], false, false, 'return', false).'" />
+				<input type="hidden" name="sf" value="'.usces_crform($usces_entries['order']['shipping_charge'], false, false, 'return', false).'" />
 				<input type="hidden" name="pt" value="7" />
 				<input type="hidden" name="inm" value="'.esc_attr($desc).'" />
 				<input type="hidden" name="pn" value="'.esc_attr(str_replace('-', '', mb_convert_kana($usces_entries['customer']['tel'], 'a', 'UTF-8'))).'" />
