@@ -497,7 +497,6 @@ class usces_cart {
 							'total_full_price' => '',
 							'note' => '',
 							'tax' => '',
-							'payment_name' => '',
 							'delidue_date' => ''
 						 );
 		if(isset($_SESSION['usces_entry']['order'])){

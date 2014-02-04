@@ -6463,7 +6463,7 @@ class usc_e_shop
 		elseif($this->options['tax_method'] == 'rounding')
 			$tax = round($total * $this->options['tax_rate'] / 100);
 
-		return $tax;
+		return apply_filters('usces_filter_getTax', $tax);
 	}
 	
 	function set_cart_fees( $member, &$entries ) {
