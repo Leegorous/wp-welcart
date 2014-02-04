@@ -276,11 +276,11 @@ function usces_paypal_shipping_form() {
 				<th>'.__('shipping option', 'usces').'</th>
 				<td>'.usces_the_delivery_method( $usces_entries['order']['delivery_method'], 'return' ).'</td>
 			</tr>
-			<tr>
+			<tr class="hide">
 				<th>'.__('Delivery date', 'usces').'</th>
 				<td>'.usces_the_delivery_date( $usces_entries['order']['delivery_date'], 'return' ).'</td>
 			</tr>
-			<tr>
+			<tr class="hide">
 				<th>'.__('Delivery Time', 'usces').'</th>
 				<td>'.usces_the_delivery_time( $usces_entries['order']['delivery_time'], 'return' ).'</td>
 			</tr>
