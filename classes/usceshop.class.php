@@ -1362,7 +1362,7 @@ class usc_e_shop
 						$this->action_message = __('options are updated','usces');
 						$options['acting_settings']['sbps']['activate'] = 'on';
 						if( isset($_POST['ope']) && 'public' == $_POST['ope'] ) {
-							$this->options['acting_settings']['sbps']['send_url'] = 'https://fep.sps-system.com/f01/FepBuyInfoReceive.do';
+							$options['acting_settings']['sbps']['send_url'] = 'https://fep.sps-system.com/f01/FepBuyInfoReceive.do';
 						}
 						if( 'on' == $options['acting_settings']['sbps']['card_activate'] ){
 							$this->payment_structure['acting_sbps_card'] = 'カード決済（ソフトバンク・ペイメント）';
@@ -5266,7 +5266,7 @@ class usc_e_shop
 //20140131ysk start
 		$update_acting_settings_sbps = false;
 		if( isset($this->options['acting_settings']['sbps']['card_activate']) and 'on' == $this->options['acting_settings']['sbps']['card_activate'] ) {
-			if( empty($this->options['acting_settings']['sbps']['send_url']) ) {
+			if( empty($this->options['acting_settings']['sbps']['send_url']) or 'https://fep.sps-system.com/f01/FepBuyInfoReceive.do' != $this->options['acting_settings']['sbps']['send_url'] ) {
 				$this->options['acting_settings']['sbps']['send_url'] = 'https://fep.sps-system.com/f01/FepBuyInfoReceive.do';
 				$update_acting_settings_sbps = true;
 			}
@@ -5996,7 +5996,6 @@ class usc_e_shop
 			$acting_opts = $this->options['acting_settings']['zeus'];
 			$interface = parse_url($acting_opts['conv_url']);
 
-
 			$vars .= 'clientip=' . $acting_opts['clientip_conv'];
 			$vars .= '&act=' . $_POST['act'];
 			$vars .= '&money=' . $_POST['money'];
@@ -6006,11 +6005,10 @@ class usc_e_shop
 			$vars .= '&pay_cvs=' . $_POST['pay_cvs'];
 			$vars .= '&sendid=' . $_POST['sendid'];
 			$vars .= '&sendpoint=' . $_POST['sendpoint'];
-			if( !WCUtils::is_blank($acting_opts['testid_conv']) ){
+			if( isset($acting_opts['conv_ope']) && 'test' == $acting_opts['conv_ope'] ) {
 				$vars .= '&testid=' . $acting_opts['testid_conv'];
 				$vars .= '&test_type=' . $acting_opts['test_type_conv'];
 			}
-
 
 			$header = "POST " . $interface['path'] . " HTTP/1.1\r\n";
 			$header .= "Host: " . $_SERVER['HTTP_HOST'] . "\r\n";
@@ -6064,10 +6062,17 @@ class usc_e_shop
 //20110208ysk start
 		}else if($acting_flg == 'acting_paypal_ec') {
 			$acting_opts = $this->options['acting_settings']['paypal'];
+			$currency_code = $this->get_currency_code();
+			$addroverride = '1';
+			if( isset( $_POST['PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE'] ) ) {
+				if( 'US' == $_POST['PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE'] or 'CA' == $_POST['PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE'] ) $addroverride = '0';
+			} else {
+				$addroverride = '0';
+			}
 
 			$nvpstr  = $query;
-			$nvpstr .= '&CURRENCYCODE='.$this->get_currency_code();
-			$nvpstr .= '&ADDROVERRIDE=1';
+			$nvpstr .= '&CURRENCYCODE='.$currency_code;
+			$nvpstr .= '&ADDROVERRIDE='.$addroverride;
 			$nvpstr .= '&PAYMENTACTION=' . apply_filters('usces_filter_paypal_ec_paymentaction', 'Sale');
 
 			//The returnURL is the location where buyers return to when a payment has been succesfully authorized.
