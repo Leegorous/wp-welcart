@@ -57,6 +57,7 @@ $html .= '
 	
 $html .= uesces_addressform( 'member', $usces_members );
 
+
 $html .= '<tr>
 	<th scope="row">' . __('e-mail adress', 'usces') . '</th>
 	<td colspan="2"><input name="member[mailaddress1]" id="mailaddress1" type="text" value="' . esc_attr($usces_members['mailaddress1']) . '" /></td>

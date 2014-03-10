@@ -650,12 +650,12 @@ function usces_the_itemImage($number = 0, $width = 60, $height = 60, $post = '',
 		$html = wp_get_attachment_image( $pictid, array($width, $height), false );
 		if( 'item' == $media ){
 			$alt = 'alt="'.esc_attr($code[0]).'"';
-			$alt = apply_filters('usces_filter_img_alt', $alt, $post_id, $pictid);
+			$alt = apply_filters('usces_filter_img_alt', $alt, $post_id, $pictid, $width, $height);
 			$html = preg_replace('/alt=\"[^\"]*\"/', $alt, $html);
 			$title = 'title="'.esc_attr($name[0]).'"';
-			$title = apply_filters('usces_filter_img_title', $title, $post_id, $pictid);
+			$title = apply_filters('usces_filter_img_title', $title, $post_id, $pictid, $width, $height);
 			$html = preg_replace('/title=\"[^\"]+\"/', $title, $html);
-			$html = apply_filters( 'usces_filter_main_img', $html, $post_id, $pictid);
+			$html = apply_filters( 'usces_filter_main_img', $html, $post_id, $pictid, $width, $height);
 		}
 
 	}else{
@@ -671,12 +671,12 @@ function usces_the_itemImage($number = 0, $width = 60, $height = 60, $post = '',
 			$html = wp_get_attachment_image( $pictid, array($width, $height), true );//'<img src="#" height="60" width="60" alt="" />';
 			if( 'item' == $media ){
 				$alt = 'alt="'.esc_attr($code).'"';
-				$alt = apply_filters('usces_filter_img_alt', $alt, $post_id, $pictid);
+				$alt = apply_filters('usces_filter_img_alt', $alt, $post_id, $pictid, $width, $height);
 				$html = preg_replace('/alt=\"[^\"]*\"/', $alt, $html);
 				$title = 'title="'.esc_attr($name).'"';
-				$title = apply_filters('usces_filter_img_title', $title, $post_id, $pictid);
+				$title = apply_filters('usces_filter_img_title', $title, $post_id, $pictid, $width, $height);
 				$html = preg_replace('/title=\"[^\"]+\"/', $title, $html);
-				$html = apply_filters( 'usces_filter_main_img', $html, $post_id, $pictid);
+				$html = apply_filters( 'usces_filter_main_img', $html, $post_id, $pictid, $width, $height);
 			}
 		}else{
 			$pictids = $usces->get_pictids($code);
@@ -685,12 +685,12 @@ function usces_the_itemImage($number = 0, $width = 60, $height = 60, $post = '',
 			$html = wp_get_attachment_image( $pictid, array($width, $height), false );//'<img src="#" height="60" width="60" alt="" />';
 			if( 'item' == $media ){
 				$alt = 'alt="'.esc_attr($code).'"';
-				$alt = apply_filters('usces_filter_img_alt', $alt, $post_id, $pictid);
+				$alt = apply_filters('usces_filter_img_alt', $alt, $post_id, $pictid, $width, $height);
 				$html = preg_replace('/alt=\"[^\"]*\"/', $alt, $html);
 				$title = 'title="'.esc_attr($name).'"';
-				$title = apply_filters('usces_filter_img_title', $title, $post_id, $pictid);
+				$title = apply_filters('usces_filter_img_title', $title, $post_id, $pictid, $width, $height);
 				$html = preg_replace('/title=\"[^\"]+\"/', $title, $html);
-				$html = apply_filters( 'usces_filter_sub_img', $html, $post_id, $pictid);
+				$html = apply_filters( 'usces_filter_sub_img', $html, $post_id, $pictid, $width, $height);
 			}
 		}
 	}
@@ -3179,28 +3179,28 @@ function usces_point_inform_zeus() {
 
 	switch( $acting_flag ) {
 	case 'acting_zeus_card':
-		$html .= '<input type="hidden" name="cnum1" value="'.$_POST['cnum1'].'">';
+		$html .= '<input type="hidden" name="cnum1" value="'.esc_attr($_POST['cnum1']).'">';
 		if( isset($_POST['securecode']) ) {
-			$html .= '<input type="hidden" name="securecode" value="'.$_POST['securecode'].'">';
+			$html .= '<input type="hidden" name="securecode" value="'.esc_attr($_POST['securecode']).'">';
 		}
-		$html .= '<input type="hidden" name="expyy" value="'.$_POST['expyy'].'">';
-		$html .= '<input type="hidden" name="expmm" value="'.$_POST['expmm'].'">';
-		$html .= '<input type="hidden" name="username" value="'.$_POST['username'].'">';
+		$html .= '<input type="hidden" name="expyy" value="'.esc_attr($_POST['expyy']).'">';
+		$html .= '<input type="hidden" name="expmm" value="'.esc_attr($_POST['expmm']).'">';
+		$html .= '<input type="hidden" name="username" value="'.esc_attr($_POST['username']).'">';
 		if( isset($_POST['howpay']) ) {
-			$html .= '<input type="hidden" name="howpay" value="'.$_POST['howpay'].'">';
+			$html .= '<input type="hidden" name="howpay" value="'.esc_attr($_POST['howpay']).'">';
 		}
 		if( isset($_POST['cbrand']) ) {
-			$html .= '<input type="hidden" name="cbrand" value="'.$_POST['cbrand'].'">';
-			$html .= '<input type="hidden" name="div_1" value="'.$_POST['div_1'].'">';
-			$html .= '<input type="hidden" name="div_2" value="'.$_POST['div_2'].'">';
-			$html .= '<input type="hidden" name="div_3" value="'.$_POST['div_3'].'">';
+			$html .= '<input type="hidden" name="cbrand" value="'.esc_attr($_POST['cbrand']).'">';
+			$html .= '<input type="hidden" name="div_1" value="'.esc_attr($_POST['div_1']).'">';
+			$html .= '<input type="hidden" name="div_2" value="'.esc_attr($_POST['div_2']).'">';
+			$html .= '<input type="hidden" name="div_3" value="'.esc_attr($_POST['div_3']).'">';
 		}
 		break;
 
 	case 'acting_zeus_conv':
 		if( isset($_POST['pay_cvs']) ) {
-			$html .= '<input type="hidden" name="pay_cvs" value="'.$_POST['pay_cvs'].'">';
-			$html .= '<input type="hidden" name="username" value="'.$_POST['username'].'">';
+			$html .= '<input type="hidden" name="pay_cvs" value="'.esc_attr($_POST['pay_cvs']).'">';
+			$html .= '<input type="hidden" name="username" value="'.esc_attr($_POST['username']).'">';
 		}
 		break;
 	}
