@@ -987,7 +987,7 @@ function usces_reg_orderdata( $results = array() ) {
 	}else{
 //20131121ysk start
 		//$status = ( $set['settlement'] == 'transferAdvance' || $set['settlement'] == 'transferDeferred' || $set['settlement'] == 'acting_remise_conv' || $set['settlement'] == 'acting_zeus_bank' || $set['settlement'] == 'acting_zeus_conv' || $set['settlement'] == 'acting_jpayment_conv' || $set['settlement'] == 'acting_jpayment_bank' || $set['settlement'] == 'acting_sbps_conv' || $set['settlement'] == 'acting_sbps_payeasy' || $set['settlement'] == 'acting_digitalcheck_conv' || $set['settlement'] == 'acting_mizuho_conv1' || $set['settlement'] == 'acting_mizuho_conv2' ) ? 'noreceipt' : '';
-		$noreceipt_status_table = apply_filters( 'usces_filter_noreceipt_status', array( 'transferAdvance', 'transferDeferred', 'acting_remise_conv', 'acting_zeus_bank', 'acting_zeus_conv', 'acting_jpayment_conv', 'acting_jpayment_bank', 'acting_sbps_conv', 'acting_sbps_payeasy', 'acting_digitalcheck_conv', 'acting_mizuho_conv1', 'acting_mizuho_conv2' ) );
+		$noreceipt_status_table = apply_filters( 'usces_filter_noreceipt_status', array( 'transferAdvance', 'transferDeferred', 'acting_remise_conv', 'acting_zeus_bank', 'acting_zeus_conv', 'acting_jpayment_conv', 'acting_jpayment_bank', 'acting_sbps_conv', 'acting_sbps_payeasy', 'acting_digitalcheck_conv', 'acting_mizuho_conv1', 'acting_mizuho_conv2', 'acting_veritrans_conv' ) );
 		$status = ( in_array( $set['settlement'], $noreceipt_status_table ) ) ? 'noreceipt' : '';
 		$order_modified = NULL;
 	}
@@ -1145,7 +1145,7 @@ function usces_reg_orderdata( $results = array() ) {
 			$usces->set_order_meta_value('settlement_id', $_GET['cod'], $order_id);
 			foreach($_GET as $key => $value) {
 				if( 'purchase_jpayment' != $key)
-					$data[$key] = mysql_real_escape_string($value);
+					$data[$key] = esc_sql($value);
 			}
 			$usces->set_order_meta_value('acting_'.$_REQUEST['acting'], serialize($data), $order_id);
 		}
@@ -1159,7 +1159,7 @@ function usces_reg_orderdata( $results = array() ) {
 //20121206ysk start
 		if( isset($_REQUEST['SID']) && isset($_REQUEST['FUKA']) ) {
 			if( substr($_REQUEST['FUKA'], 0, 24) == 'acting_digitalcheck_card' ) {
-				$data['SID'] = mysql_real_escape_string($_REQUEST['SID']);
+				$data['SID'] = esc_sql($_REQUEST['SID']);
 				$usces->set_order_meta_value( $_REQUEST['FUKA'], serialize($data), $order_id );
 			}
 			$usces->set_order_meta_value( 'SID', $_REQUEST['SID'], $order_id );
@@ -1167,14 +1167,14 @@ function usces_reg_orderdata( $results = array() ) {
 //20121206ysk end
 //20130225ysk start
 		if( isset($_REQUEST['acting']) && 'mizuho_card' == $_REQUEST['acting'] ) {
-			$data['stran'] = mysql_real_escape_string($_REQUEST['stran']);
-			$data['mbtran'] = mysql_real_escape_string($_REQUEST['mbtran']);
+			$data['stran'] = esc_sql($_REQUEST['stran']);
+			$data['mbtran'] = esc_sql($_REQUEST['mbtran']);
 			$usces->set_order_meta_value( 'acting_'.$_REQUEST['acting'], serialize($data), $order_id );
 		} elseif( isset($_REQUEST['acting']) && 'mizuho_conv' == $_REQUEST['acting'] ) {
-			$data['stran'] = mysql_real_escape_string($_REQUEST['stran']);
-			$data['mbtran'] = mysql_real_escape_string($_REQUEST['mbtran']);
-			$data['bktrans'] = mysql_real_escape_string($_REQUEST['bktrans']);
-			$data['tranid'] = mysql_real_escape_string($_REQUEST['tranid']);
+			$data['stran'] = esc_sql($_REQUEST['stran']);
+			$data['mbtran'] = esc_sql($_REQUEST['mbtran']);
+			$data['bktrans'] = esc_sql($_REQUEST['bktrans']);
+			$data['tranid'] = esc_sql($_REQUEST['tranid']);
 			$usces->set_order_meta_value( 'stran', $data['stran'], $order_id );
 			$usces->set_order_meta_value( 'acting_'.$_REQUEST['acting'], serialize($data), $order_id );
 		}
@@ -1184,6 +1184,18 @@ function usces_reg_orderdata( $results = array() ) {
 			$usces->set_order_meta_value( 'TransactionId', $_REQUEST['TransactionId'], $order_id );
 		}
 //20131220ysk end
+//20140206ysk start
+		if( isset($_GET['acting']) and 'veritrans_card' == $_GET['acting'] and isset($_POST['orderId']) ) {
+			$usces->set_order_meta_value( 'orderId', $_POST['orderId'], $order_id );
+			$usces->set_order_meta_value( 'acting_'.$_GET['acting'], serialize($_POST), $order_id );
+		} elseif( isset($_GET['acting']) and 'veritrans_conv' == $_GET['acting'] and isset($_POST['orderId']) ) {
+			$usces->set_order_meta_value( 'orderId', $_POST['orderId'], $order_id );
+			$data['mStatus'] = mysql_real_escape_string( $_POST['mStatus'] );
+			$data['vResultCode'] = mysql_real_escape_string( $_POST['vResultCode'] );
+			$data['orderId'] = mysql_real_escape_string( $_POST['orderId'] );
+			$usces->set_order_meta_value( 'acting_'.$_GET['acting'], serialize($data), $order_id );
+		}
+//20140206ysk end
 		
 		//$args = array('cart'=>$cart, 'entry'=>$entry, 'order_id'=>$order_id, 'member_id'=>$member['ID'], 'payments'=>$payments, 'charging_type'=>$charging_type);
 		$args = array('cart'=>$cart, 'entry'=>$entry, 'order_id'=>$order_id, 'member_id'=>$member['ID'], 'payments'=>$set, 'charging_type'=>$charging_type);//20131121ysk
@@ -1362,6 +1374,8 @@ function usces_update_memberdata() {
 //20100818ysk end
 
 	$ID = (int)$_REQUEST['member_id'];
+	$name3 = ( isset( $_POST['member']['name3'] ) ) ? $_POST['member']['name3'] : '';
+	$name4 = ( isset( $_POST['member']['name4'] ) ) ? $_POST['member']['name4'] : '';
 
 //$wpdb->show_errors();
 	$query = $wpdb->prepare(
@@ -1375,8 +1389,8 @@ function usces_update_memberdata() {
 					$_POST['member']['point'], 
 					$_POST['member']['name1'], 
 					$_POST['member']['name2'], 
-					$_POST['member']['name3'], 
-					$_POST['member']['name4'], 
+					$name3, 
+					$name4, 
 					$_POST['member']['zipcode'], 
 					$_POST['member']['pref'], 
 					$_POST['member']['address1'], 
@@ -1422,8 +1436,7 @@ function usces_update_memberdata() {
 	}
 	
 
-	//$meta_keys = apply_filters( 'usces_filter_delete_member_pcid', "'zeus_pcid', 'remise_pcid', 'digitalcheck_ip_user_id'" );
-	$meta_keys = apply_filters( 'usces_filter_delete_member_pcid', "'remise_pcid', 'digitalcheck_ip_user_id'" );
+	$meta_keys = apply_filters( 'usces_filter_delete_member_pcid', "'zeus_pcid', 'remise_pcid', 'digitalcheck_ip_user_id'" );
 	$query = $wpdb->prepare("DELETE FROM $member_table_meta_name WHERE member_id = %d AND meta_key IN( $meta_keys )", 
 			$_POST['member_id'] 
 			);
@@ -2444,15 +2457,22 @@ function usces_check_acting_return() {
 			$results['reg_order'] = false;
 			break;
 //20131220ysk end
+//20140206ysk start
+		case 'veritrans_card':
+		case 'veritrans_conv':
+			$results[0] = ( isset($_GET['result']) ) ? $_GET['result'] : 0;
+			$results['reg_order'] = false;
+			break;
+//20140206ysk end
 
 		default:
 			do_action( 'usces_action_check_acting_return_default' );
 			$results = $_REQUEST;//20140227ysk
-			if( $_REQUEST['result'] ){
+			if( isset($_REQUEST['result']) and true == $_REQUEST['result'] ) {
 				usces_log($acting.' entry data : '.print_r($entry, true), 'acting_transaction.log');
 				$results[0] = 1;
 			}else{
-				usces_log($acting.' error : '.print_r($_REQUEST,true), 'acting_transaction.log');
+				usces_log($acting.' error : '.print_r($_REQUEST, true), 'acting_transaction.log');
 				$results[0] = 0;
 			}
 //20110310ysk start
@@ -2885,7 +2905,7 @@ function usces_trackPageview_ordercompletion($push){
 	$order_id = $sesdata['order']['ID'];
 	$data = $usces->get_order_data($order_id, 'direct');
 	$cart = unserialize($data['order_cart']);
-	$total_price = $usces->get_total_price( $cart ) - $data['order_discount'];
+	$total_price = $usces->get_total_price( $cart ) + $data['order_discount'] - $data['order_usedpoint'];
 	
 	if(defined('USCES_KEY') && defined('USCES_MULTI') && true == USCES_MULTI){
 		$push[] = "'_trackPageview','/" . USCES_KEY . "wc_ordercompletion'";
@@ -2974,6 +2994,15 @@ function usces_trackPageview_deletemember($push){
 		$push[] = "'_trackPageview','/" . USCES_KEY . "wc_deletemember'";
 	}else{
 		$push[] = "'_trackPageview','/wc_deletemember'";
+	}
+	return $push;
+}
+
+function usces_trackPageview_search_item($push){
+	if(defined('USCES_KEY') && defined('USCES_MULTI') && true == USCES_MULTI){
+		$push[] = "'_trackPageview','/" . USCES_KEY . "wc_search_item'";
+	}else{
+		$push[] = "'_trackPageview','/wc_search_item'";
 	}
 	return $push;
 }
@@ -3650,7 +3679,6 @@ function usces_page_name( $out = '') {
 
 function usces_post_reg_orderdata($order_id, $results){
 	global $usces, $wpdb;
-	//$entry = $usces->cart->get_entry();//20110621ysk 0000184
 	$acting = isset($_GET['acting']) ? $_GET['acting'] : '';
 	$data = array();
 
@@ -3680,8 +3708,10 @@ function usces_post_reg_orderdata($order_id, $results){
 			case 'zeus_card':
 				$acting_opts = $usces->options['acting_settings']['zeus'];
 				if( isset($_GET['zeussuffix']) ){
+					$entry = $usces->cart->get_entry();//20110621ysk 0000184
 					$data['acting'] = 'zeus_card Secure API';
 					$data['order_number'] = $_GET['zeusordd'];
+					$data['howpay'] = $entry['order']['howpay'];
 					
 					$usces->set_order_meta_value('acting_'.$acting, serialize($data), $order_id);
 					if( $usces->is_member_logged_in() ){
@@ -3695,7 +3725,7 @@ function usces_post_reg_orderdata($order_id, $results){
 				}else{
 					$trans_id = isset($_REQUEST['ordd']) ? $_REQUEST['ordd'] : '';
 					//foreach($_GET as $key => $value) {
-					//	$data[$key] = mysql_real_escape_string($value);
+					//	$data[$key] = esc_sql($value);
 					//}
 					//$usces->set_order_meta_value('acting_'.$acting, serialize($data), $order_id);
 					if( !empty($_REQUEST['order_number']) ) {
@@ -4248,6 +4278,7 @@ function usces_is_complete_settlement( $payment_name, $status = '' ) {
 			case 'acting_digitalcheck_card':
 			case 'acting_mizuho_card':
 			case 'acting_anotherlane_card':
+			case 'acting_veritrans_card':
 			case 'COD':
 				$complete = true;
 			}

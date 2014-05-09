@@ -306,7 +306,7 @@ function usces_filter_delivery_secure_check( $mes ){
 			if ( WCUtils::is_blank($_POST["expmm"]) )
 				$mes .= __('カードの有効月を選択してください', 'usces') . "<br />";
 				
-			if ( WCUtils::is_blank($_POST["username"]) )
+			if ( WCUtils::is_blank($_POST["username_card"]) )
 				$mes .= __('カード名義を入力してください', 'usces') . "<br />";
 				
 			if ( isset($_POST["howpay"]) && 0 == $_POST["howpay"] && WCUtils::is_blank($_POST["cbrand"]) )
@@ -314,7 +314,15 @@ function usces_filter_delivery_secure_check( $mes ){
 				
 			if ( 'zeus' != $_POST['acting'] )
 				$mes .= __('カード決済データが不正です！', 'usces');
-			 
+			
+			break;
+
+		case 'acting_zeus_conv':
+			if( WCUtils::is_blank($_POST['username_conv']) ) {
+				$mes .= "お名前を入力してください。<br />";
+			} elseif( !preg_match( "/^[ァ-ヶー]+$/u", $_POST['username_conv'] ) ) {
+				$mes .= "お名前は全角カタカナで入力してください。<br />";
+			}
 			break;
 	}
 	
@@ -346,9 +354,11 @@ function usces_get_conv_name($code){
 			break;
 		case 'D005':
 		case '080'://20101018ysk
+		case 'D050':
 			$name = 'ミニストップ';
 			break;
 		case 'D010':
+		case 'D060':
 			$name = 'デイリーヤマザキ';
 			break;
 		case 'D011':
@@ -450,11 +460,11 @@ function usces_payment_detail($usces_entries){
 			break;
 		
 		case 'acting_zeus_card':
-			if( !isset($_REQUEST['cbrand']) || (isset($_REQUEST['howpay']) && '1' === $_REQUEST['howpay']) ){
+			if( !isset($usces_entries['order']['cbrand']) || (isset($usces_entries['order']['howpay']) && '1' === $usces_entries['order']['howpay']) ){
 				$str = '　一括払い';
 			}else{
-				$div_name = 'div_' . $_REQUEST['cbrand'];
-				switch($_REQUEST[$div_name]){
+				$div_name = 'div_' . $usces_entries['order']['cbrand'];
+				switch($usces_entries['order'][$div_name]){
 					case '01':
 						$str = '　一括払い';
 						break;
@@ -496,8 +506,8 @@ function usces_payment_detail($usces_entries){
 			break;
 		
 		case 'acting_remise_card':
-			if( isset( $_POST['div'] ) ){
-				switch($_POST['div']){
+			if( isset( $usces_entries['order']['div'] ) ){
+				switch($usces_entries['order']['div']){
 					case '0':
 						$str = '　一括払い';
 						break;
@@ -795,7 +805,7 @@ function usces_download_member_list() {
 	$chk_mem['date'] = (isset($_REQUEST['check']['date'])) ? 1 : 0;
 	$chk_mem['point'] = (isset($_REQUEST['check']['point'])) ? 1 : 0;
 	$chk_mem['rank'] = (isset($_REQUEST['check']['rank'])) ? 1 : 0;
-	$usces_opt_member['chk_mem'] = $chk_mem;
+	$usces_opt_member['chk_mem'] = apply_filters( 'usces_filter_chk_mem', $chk_mem );
 	update_option('usces_opt_member', $usces_opt_member);
 	//==========================================================================
 
@@ -891,6 +901,7 @@ function usces_download_member_list() {
 	if(isset($_REQUEST['check']['date'])) $line .= $th_h.__('Strated date', 'usces').$th_f;
 	if(isset($_REQUEST['check']['point'])) $line .= $th_h.__('current point', 'usces').$th_f;
 	if(isset($_REQUEST['check']['rank'])) $line .= $th_h.__('Rank', 'usces').$th_f;
+	$line .= apply_filters( 'usces_filter_chk_mem_label', NULL, $usces_opt_member, $rows );
 	$line .= $tr_f.$lf;
 	//==========================================================================
 	foreach((array)$rows as $array) {
@@ -1031,6 +1042,7 @@ function usces_download_member_list() {
 			}
 			$line .= $td_h.$rank.$td_f;
 		}
+		$line .= apply_filters( 'usces_filter_chk_mem_data', NULL, $usces_opt_member, $member_id, $data );
 		$line .= $tr_f.$lf;
 	}
 	$line .= $table_f.$lf;

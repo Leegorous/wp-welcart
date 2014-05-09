@@ -7,10 +7,13 @@ foreach( (array)$payments as $id => $payment ) {
 if( $usces_payment ) {
 	add_action( 'init', 'usces_paypal_add_stylesheet' );
 	add_action( 'usces_after_main', 'usces_paypal_add_script' );
-	add_action( 'usces_action_cart_page_footer', 'usces_paypal_action_cart_page_footer' );
 	add_action( 'usces_front_ajax', 'usces_paypal_front_ajax' );
 	add_filter( 'usces_filter_uscesL10n', 'usces_paypal_filter_uscesL10n' );
 	add_filter( 'usces_filter_paypal_ec_cancelurl', 'usces_paypal_filter_paypal_ec_cancelurl', 10, 2 );
+	add_action( 'usces_action_cart_page_footer', 'usces_paypal_action_cart_page_footer' );
+	//add_filter( 'usces_filter_cart_page_footer', 'usces_paypal_filter_cart_page_footer' );
+	add_filter( 'usces_filter_cartContent', 'usces_paypal_filter_cart_page_footer' );
+	add_action( 'usces_action_customerinfo', 'usces_paypal_action_customerinfo' );
 }
 
 function usces_paypal_add_stylesheet() {
@@ -40,20 +43,38 @@ function usces_paypal_filter_uscesL10n() {
 }
 
 function usces_paypal_action_cart_page_footer() {
+	$footer = usces_paypal_cart_page_footer();
+	echo $footer;
+}
+
+function usces_paypal_filter_cart_page_footer( $html ) {
 	global $usces;
+	$footer = ( 'cart' == $usces->page ) ? usces_paypal_cart_page_footer( false ) : '';
+	return $html.$footer;
+}
+
+function usces_paypal_cart_page_footer( $include = true ) {
+	global $usces;
+	$html = '';
 
 	$member = $usces->get_member();
-	if( !usces_paypal_set_session( $member['ID'] ) ) return;
-	if( false === $usces->cart->num_row() ) return;
+	if( !usces_paypal_set_session( $member['ID'] ) ) return $html;
+	if( false === $usces->cart->num_row() ) return $html;
 
 	$usces_entries = $usces->cart->get_entry();
-
-	$html = '';
-	include( USCES_PLUGIN_DIR."/includes/delivery_info_script.php" );
 	$usces->set_cart_fees( $member, $usces_entries );
+
 	$usces_entries = $usces->cart->get_entry();
 	$total_price = $usces_entries['order']['total_items_price'] + $usces_entries['order']['discount'] + $usces_entries['order']['shipping_charge'] + $usces_entries['order']['cod_fee'];
 	$item_price = $usces_entries['order']['total_items_price'] + $usces_entries['order']['discount'];
+
+	if( $include ) {
+		include( USCES_PLUGIN_DIR."/includes/delivery_info_script.php" );
+	} else {
+		ob_start();
+		include( USCES_PLUGIN_DIR."/includes/delivery_info_script.php" );
+		$html .= ob_get_clean();
+	}
 
 	$html .= '
 	<script type="text/javascript">
@@ -161,7 +182,7 @@ function usces_paypal_action_cart_page_footer() {
 		<div class="send"><input name="paypal_close" type="button" id="paypal_close" class="back_to_delivery_button" value="'.__('Cancel', 'usces').'" /></div>
 	</div>';
 
-	echo $html;
+	return $html;
 }
 
 function usces_paypal_set_session( $member_id, $uscesid = NULL ) {
@@ -196,10 +217,24 @@ function usces_paypal_set_session( $member_id, $uscesid = NULL ) {
 	$usces->set_session_custom_member( $member['ID'] );
 
 	foreach( $_SESSION['usces_member'] as $key => $value ) {
-		if( 'country' == $key and empty( $value ) ) {
-			$_SESSION['usces_entry']['customer'][$key] = usces_get_base_country();
+		if( 'custom_member' == $key ) {
+			foreach( $_SESSION['usces_member']['custom_member'] as $mbkey => $mbvalue ) {
+				//if( empty($_SESSION['usces_entry']['custom_customer'][$mbkey]) ) {
+					if( is_array($mbvalue) ) {
+						foreach( $mbvalue as $k => $v ) {
+							$_SESSION['usces_entry']['custom_customer'][$mbkey][$v] = $v;
+						}
+					} else {
+						$_SESSION['usces_entry']['custom_customer'][$mbkey] = $mbvalue;
+					}
+				//}
+			}
 		} else {
-			$_SESSION['usces_entry']['customer'][$key] = trim( $value );
+			if( 'country' == $key and empty( $value ) ) {
+				$_SESSION['usces_entry']['customer'][$key] = usces_get_base_country();
+			} else {
+				$_SESSION['usces_entry']['customer'][$key] = trim( $value );
+			}
 		}
 	}
 	foreach( $_SESSION['usces_entry']['customer'] as $key => $value ) {
@@ -415,7 +450,7 @@ function usces_paypal_purchase_form() {
 			$html .= '<input type="hidden" name="purchase" value="acting_paypal_ec">';
 			$html .= '<input type="hidden" name="paypal_from_cart" value="1">';
 			$html .= '<div class="send"><input type="image" src="https://www.paypal.com/'.( USCES_JP ? 'ja_JP/JP' : 'en_US' ).'/i/btn/btn_xpressCheckout.gif" border="0" name="submit" value="submit" alt="PayPal"'.apply_filters( 'usces_filter_confirm_nextbutton', NULL ).$purchase_disabled.' /></div>';
-			$html = apply_filters( 'usces_filter_confirm_inform', $html, $payment, $acting_flag, $rand, $purchase_disabled );
+			$html = apply_filters( 'usces_filter_confirm_inform', $html, $payment_paypal, $acting_flag, $rand, $purchase_disabled );
 			$html .= '</form>';
 	return $html;
 }
@@ -498,6 +533,13 @@ function usces_paypal_delivery_time_select( $selected ) {
 	global $usces;
 	$usces->cart->set_order_entry( array( 'delivery_time' => $selected ) );
 	die( "ok" );
+}
+
+function usces_paypal_action_customerinfo() {
+	global $usces;
+	if( $usces->is_member_logged_in() ) {
+		$usces->cart->set_order_entry( array( 'payment_name' => '' ) );
+	}
 }
 
 ?>

@@ -127,23 +127,24 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 			$html .= '<input type="hidden" name="telno" value="' . esc_attr(str_replace('-', '', $usces_entries['customer']['tel'])) . '">
 				<input type="hidden" name="email" value="' . esc_attr($usces_entries['customer']['mailaddress1']) . '">
 				<input type="hidden" name="sendid" value="' . $member['ID'] . '">
-				<input type="hidden" name="username" value="' . esc_attr($_POST['username']) . '">
+				<input type="hidden" name="username" value="' . esc_attr($_POST['username_card']) . '">
 				<input type="hidden" name="money" value="' . usces_crform($usces_entries['order']['total_full_price'], false, false, 'return', false) . '">
 				<input type="hidden" name="sendpoint" value="' . $rand . '">
 				<input type="hidden" name="printord" value="yes">';
-			if( isset($_POST['cbrand']) && isset($_POST['howpay']) && WCUtils::is_zero($_POST['howpay']) ){
-				$html .= '<input type="hidden" name="howpay" value="' . $_POST['howpay'] . '">';
-				$html .= '<input type="hidden" name="cbrand" value="' . $_POST['cbrand'] . '">';
-				$div_name = 'div_' . $_POST['cbrand'];
-				$html .= '<input type="hidden" name="div" value="' . $_POST[$div_name] . '">';
-				$html .= '<input type="hidden" name="div_1" value="' . $_POST['div_1'] . '">';
-				$html .= '<input type="hidden" name="div_2" value="' . $_POST['div_2'] . '">';
-				$html .= '<input type="hidden" name="div_3" value="' . $_POST['div_3'] . '">';
+			if( isset($usces_entries['order']['cbrand']) && isset($usces_entries['order']['howpay']) && WCUtils::is_zero($usces_entries['order']['howpay']) ){
+				$html .= '<input type="hidden" name="howpay" value="' . $usces_entries['order']['howpay'] . '">';
+				$html .= '<input type="hidden" name="cbrand" value="' . $usces_entries['order']['cbrand'] . '">';
+				$div_name = 'div_' . $usces_entries['order']['cbrand'];
+				$html .= '<input type="hidden" name="div" value="' . $usces_entries['order'][$div_name] . '">';
+				$html .= '<input type="hidden" name="div_1" value="' . $usces_entries['order']['div_1'] . '">';
+				$html .= '<input type="hidden" name="div_2" value="' . $usces_entries['order']['div_2'] . '">';
+				$html .= '<input type="hidden" name="div_3" value="' . $usces_entries['order']['div_3'] . '">';
 			}
 			$html .= '
 				<input type="hidden" name="cnum1" value="' . esc_attr($_POST['cnum1']) . '">
 				<div class="send"><input name="backDelivery" type="submit" id="back_button" class="back_to_delivery_button" value="'.__('Back', 'usces').'"' . apply_filters('usces_filter_confirm_prebutton', NULL) . ' />
-				<input name="purchase" type="submit" id="purchase_button" class="checkout_button" value="'.__('Checkout', 'usces').'"' . apply_filters('usces_filter_confirm_nextbutton', NULL) . $purchase_disabled . ' /></div>';
+				<input name="purchase" type="submit" id="purchase_button" class="checkout_button" value="'.__('Checkout', 'usces').'"' . apply_filters('usces_filter_confirm_nextbutton', NULL) . $purchase_disabled . ' /></div>
+				<input type="hidden" name="username_card" value="' . esc_attr($_POST['username_card']) . '">';
 			$html = apply_filters('usces_filter_confirm_inform', $html, $payments, $acting_flag, $rand, $purchase_disabled);
 			$html .= '</form>';
 			break;
@@ -152,18 +153,20 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 			$member = $usces->get_member();
 			$acting_opts = $usces->options['acting_settings']['zeus'];
 			$usces->save_order_acting_data($rand);
+			$pay_cvs = ( isset($usces_entries['order']['pay_cvs']) ) ? $usces_entries['order']['pay_cvs'] : '';
 			$html .= '<form id="purchase_form" action="' . USCES_CART_URL . '" method="post" onKeyDown="if (event.keyCode == 13) {return false;}">
 				<input type="hidden" name="act" value="secure_order">
 				<input type="hidden" name="money" value="' . usces_crform($usces_entries['order']['total_full_price'], false, false, 'return', false) . '">
-				<input type="hidden" name="username" value="' . esc_attr($_POST['username']) . '">
+				<input type="hidden" name="username" value="' . esc_attr($_POST['username_conv']) . '">
 				<input type="hidden" name="telno" value="' . esc_attr(str_replace('-', '', $usces_entries['customer']['tel'])) . '">
 				<input type="hidden" name="email" value="' . esc_attr($usces_entries['customer']['mailaddress1']) . '">
-				<input type="hidden" name="pay_cvs" value="' . $_POST['pay_cvs'] . '">
+				<input type="hidden" name="pay_cvs" value="' . $pay_cvs . '">
 				<input type="hidden" name="sendid" value="' . $member['ID'] . '">
 				<input type="hidden" name="sendpoint" value="' . $rand . '">';
 			$html .= '
 				<div class="send"><input name="backDelivery" type="submit" id="back_button" class="back_to_delivery_button" value="'.__('Back', 'usces').'"' . apply_filters('usces_filter_confirm_prebutton', NULL) . ' />
-				<input name="purchase" type="submit" id="purchase_button" class="checkout_button" value="'.__('Checkout', 'usces').'"' . apply_filters('usces_filter_confirm_nextbutton', NULL) . $purchase_disabled . ' /></div>';
+				<input name="purchase" type="submit" id="purchase_button" class="checkout_button" value="'.__('Checkout', 'usces').'"' . apply_filters('usces_filter_confirm_nextbutton', NULL) . $purchase_disabled . ' /></div>
+				<input type="hidden" name="username_conv" value="' . esc_attr($_POST['username_conv']) . '">';
 			$html = apply_filters('usces_filter_confirm_inform', $html, $payments, $acting_flag, $rand, $purchase_disabled);
 			$html .= '</form>';
 			break;
@@ -227,9 +230,9 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 				if( $pcid != NULL )
 					$html .= '<input type="hidden" name="PAYQUICKID" value="' . $pcid . '">';
 			}
-			if( 'on' == $acting_opts['howpay'] && isset($_POST['div']) && '0' !== $_POST['div'] && 'continue' != $charging_type ){
-				$html .= '<input type="hidden" name="div" value="' . $_POST['div'] . '">';
-				switch( $_POST['div'] ){
+			if( 'on' == $acting_opts['howpay'] && isset($usces_entries['order']['div']) && '0' !== $usces_entries['order']['div'] && 'continue' != $charging_type ){
+				$html .= '<input type="hidden" name="div" value="' . $usces_entries['order']['div'] . '">';
+				switch( $usces_entries['order']['div'] ){
 					case '1':
 						$html .= '<input type="hidden" name="METHOD" value="61">';
 						$html .= '<input type="hidden" name="PTIMES" value="2">';
@@ -618,6 +621,7 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 				if( 'on' == $acting_opts['mobile_softbank'] ) $pay_method .= ",softbank";
 				if( 'on' == $acting_opts['mobile_auone'] ) $pay_method .= ",auone";
 				if( 'on' == $acting_opts['mobile_mysoftbank'] ) $pay_method .= ",mysoftbank";
+				if( 'on' == $acting_opts['mobile_softbank2'] ) $pay_method .= ",softbank2";
 				$pay_method = ltrim( $pay_method, "," );
 				$acting = "sbps_mobile";
 				$free_csv = "";
@@ -960,6 +964,33 @@ if( 'acting' != substr($payments['settlement'], 0, 6)  || 0 == $usces_entries['o
 			$html .= '</form>';
 			break;
 //20131220ysk end
+//20140206ysk start
+		case 'acting_veritrans_card'://カード決済(ベリトランス)
+		case 'acting_veritrans_conv'://コンビニ決済(ベリトランス)
+			$acting_opts = $usces->options['acting_settings']['veritrans'];
+			$usces->save_order_acting_data( $rand );
+			$settlement_type = ( 'acting_veritrans_card' == $acting_flag ) ? '01' : '02';
+			$amount = apply_filters( 'usces_filter_acting_amount', usces_crform( $usces_entries['order']['total_full_price'], false, false, 'return', false), $acting_flag );
+			$ctx = hash_init( 'sha512' );
+			$str = $acting_opts['merchanthash'].",".$acting_opts['merchant_id'].",".$settlement_type.",".$rand.",".$amount;
+			hash_update( $ctx, $str );
+			$hash = hash_final( $ctx, true );
+			$merchanthash = bin2hex( $hash );
+			$html .= '<form id="purchase_form" name="purchase_form" action="'.USCES_CART_URL.'" method="post" onKeyDown="if (event.keyCode == 13) {return false;}">
+				<input type="hidden" name="MERCHANTHASH" value="'.esc_attr( $merchanthash ).'">
+				<input type="hidden" name="SETTLEMENT_TYPE" value="'.esc_attr( $settlement_type ).'">
+				<input type="hidden" name="ORDER_ID" value="'.esc_attr( $rand ).'">
+				<input type="hidden" name="AMOUNT" value="'.esc_attr( $amount ).'">
+				';
+			$html .= '<div class="send"><input name="purchase" type="submit" id="purchase_button" class="checkout_button" value="'.__('Checkout', 'usces').'"'.apply_filters('usces_filter_confirm_nextbutton', '').$purchase_disabled.' /></div>';
+			$html = apply_filters( 'usces_filter_confirm_inform', $html, $payments, $acting_flag, $rand, $purchase_disabled );
+			$html .= '</form>';
+			$html .= '<form action="'.USCES_CART_URL.'" method="post" onKeyDown="if (event.keyCode == 13) {return false;}">
+				<div class="send"><input name="backDelivery" type="submit" id="back_button" class="back_to_delivery_button" value="'.__('Back', 'usces').'"'.apply_filters('usces_filter_confirm_prebutton', NULL).' /></div>';
+			$html = apply_filters( 'usces_filter_confirm_inform_back', $html );
+			$html .= '</form>';
+			break;
+//20140206ysk end
 
 		default:
 			$html .= '<form id="purchase_form" action="' . apply_filters('usces_filter_acting_url', USCES_CART_URL) . '" method="post" onKeyDown="if (event.keyCode == 13) {return false;}">
